@@ -1,0 +1,45 @@
+﻿@model WebApplication1.Models.VideoCopyDto
+
+@{
+    ViewData["Title"] = "辦理影音租借";
+}
+
+<div class="container mt-5">
+    <div class="card mx-auto shadow" style="max-width: 600px;">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">🤝 辦理錄影帶租借手續</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tr>
+                    <th>影片名稱</th>
+                    <td><strong>@Model.VideoTitle</strong></td>
+                </tr>
+                <tr>
+                    <th>媒體種類</th>
+                    <td>@Model.Media</td>
+                </tr>
+                <tr>
+                    <th>拷貝代號</th>
+                    <td>#@Model.cNo</td>
+                </tr>
+            </table>
+
+            <form asp-action="RentConfirm" method="post" class="mt-4">
+                <input type="hidden" name="cNo" value="@Model.cNo" />
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-danger">👤 請選擇會員：</label>
+                    <select name="mId" class="form-select" asp-items="ViewBag.Members" required>
+                        <option value="">-- 請選擇會員代號 --</option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-secondary">返回</a>
+                    <button type="submit" class="btn btn-success">確認借出</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

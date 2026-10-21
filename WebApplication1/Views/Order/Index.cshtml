@@ -1,0 +1,125 @@
+﻿@model IEnumerable<WebApplication1.Models.Order>
+
+@{
+    ViewData["Title"] = "錄影帶租借管理後台";
+}
+
+<div class="container mt-4">
+    <h2>🎬 錄影帶管理與實時庫存中心</h2>
+
+    <form asp-action="Index" method="get" class="row g-3 mb-4">
+        <div class="col-md-8">
+            <input type="text" name="searchKeyword" class="form-control" placeholder="輸入片名、類型或導演搜尋..." value="@ViewBag.SearchKeyword" />
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-dark w-100">搜尋</button>
+        </div>
+    </form>
+
+    <div class="card shadow-sm">
+        <table class="table table-hover table-striped mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>編號</th>
+                    <th>影片片名</th>
+                    <th>類型</th>
+                    <th>分級</th>
+                    <th>導演</th>
+                    <th>📦 庫存與租借狀態 (點擊種類或會員查看詳情)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.vNo</td>
+                        <td><strong class="text-primary">@item.title</strong></td>
+                        <td>@item.type</td>
+                        <td>@item.grade</td>
+                        <td>@item.director</td>
+                        <td>
+                            <div class="list-group">
+                                @foreach (var copy in item.VideoCopies)
+                                {
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <a href="#" class="text-decoration-none text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#agencyModal-@copy.cNo">
+                                            📀 @copy.Media <span class="text-muted small">(#@copy.cNo) 🔍</span>
+                                        </a>
+
+                                        @if (string.IsNullOrEmpty(copy.MId))
+                                        {
+                                            <div>
+                                                <span class="badge bg-success">在架上</span>
+                                                <a asp-action="Rent" asp-route-id="@copy.cNo" class="btn btn-sm btn-outline-primary ms-2">租借</a>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-danger text-white" data-bs-toggle="modal" data-bs-target="#memberModal-@copy.cNo">
+                                                已借出 (會員:@copy.MId 🔍)
+                                            </button>
+                                        }
+                                    </div>
+
+                                    <div class="modal fade" id="agencyModal-@copy.cNo" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-dark text-white">
+                                                    <h5 class="modal-title">📦 拷貝入庫與代理商明細</h5>
+                                                    <button type="text" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p><strong>入庫時間：</strong> @copy.Date.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                                                    <hr />
+                                                    <p class="text-secondary fw-bold">🏢 供應代理商基本資料：</p>
+                                                    <table class="table table-bordered sm">
+                                                        <tr><th>代理商名稱</th><td>@copy.AName</td></tr>
+                                                        <tr><th>負責人</th><td>@copy.Contact</td></tr>
+                                                        <tr><th>連絡電話</th><td>@copy.AgencyPhone</td></tr>
+                                                        <tr><th>公司地址</th><td>@copy.AgencyAddress</td></tr>
+                                                        <tr><th>統一編號</th><td>@copy.UCode</td></tr>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if (copy.MemberInfo != null)
+                                    {
+                                        <div class="modal fade" id="memberModal-@copy.cNo" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-danger text-white">
+                                                        <h5 class="modal-title">👤 會員租借詳情中心</h5>
+                                                        <button type="text" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <table class="table table-sm table-striped">
+                                                            <tr><th>會員代號</th><td>@copy.MemberInfo.MId</td></tr>
+                                                            <tr><th>姓名</th><td><strong>@copy.MemberInfo.Name</strong></td></tr>
+                                                            <tr><th>電話</th><td>@copy.MemberInfo.Phone</td></tr>
+                                                            <tr><th>地址</th><td>@copy.MemberInfo.Address</td></tr>
+                                                            <tr><th>加入日期</th><td>@(copy.MemberInfo.StartDate?.ToString("yyyy-MM-dd") ?? "無資料")</td></tr>
+                                                            <tr><th>紅利點數</th><td><span class="badge bg-warning text-dark">⭐ @copy.MemberInfo.Credits 點</span></td></tr>
+                                                        </table>
+                                                        <div class="mt-3 p-2 bg-light rounded">
+                                                            <p class="mb-1 fw-bold text-primary">📋 目前名下已租借影片與拷貝種類：</p>
+                                                            @foreach (var mediaType in copy.MemberInfo.RentedMedias)
+                                                            {
+                                                                <span class="badge bg-secondary me-1">📀 @mediaType</span>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
